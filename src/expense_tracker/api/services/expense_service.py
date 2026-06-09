@@ -1,19 +1,24 @@
 from typing import List
-from datetime import date
+from sqlalchemy.orm import Session
 from src.expense_tracker.api.schemas.expense import Expense, ExpenseCreate
-
-
-DUMMY_DB: List[Expense] = [
-	Expense(id=1, title="Coffee", amount=4.50, category="Food", date=date.today()),
-	Expense(id=2, title="Internet Bill", amount=60.00, category="Utilities", date=date.today())
-]
+from src.expense_tracker.api.models.expense import ExpenseModel
 
 class ExpenseService:
-	def get_all_expenses(self) -> List[Expense]:
-		return DUMMY_DB
+
+	def __init__(self, db: Session):
+		self.db = db
+
+	def get_all_expenses(self) -> List[ExpenseModel]:
+		# SELECT * FROM expenses;
+		return self.db.query(ExpenseModel).all()
 	
-	def create_expense(self, expense_in: ExpenseCreate) -> Expense:
-		new_id = len(DUMMY_DB) + 1
-		new_expense = Expense(id=new_id, **expense_in.model_dump())
-		DUMMY_DB.append(new_expense)
-		return new_expense
+	def create_expense(self, expense_in: ExpenseCreate) -> ExpenseModel:
+		db_expense = ExpenseModel(**expense_in.model_dump())
+
+		self.db.add(db_expense)
+
+		self.db.commit()
+
+		self.db.refresh(db_expense)
+
+		return db_expense

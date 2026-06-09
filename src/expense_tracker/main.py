@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from src.expense_tracker.api.routers import health, expenses
+from src.expense_tracker.api.core.database import engine, Base
+from src.expense_tracker.api.models.expense import ExpenseModel
 
 def create_app() -> FastAPI:
+
+	Base.metadata.create_all(bind=engine)
 
 	app = FastAPI(
 		title="Expense Tracker API",

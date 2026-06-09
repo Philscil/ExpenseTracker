@@ -1,13 +1,16 @@
 from fastapi import APIRouter, Depends
 from typing import List
+from sqlalchemy.orm import Session
+
 from src.expense_tracker.api.schemas.expense import Expense, ExpenseCreate
 from src.expense_tracker.api.services.expense_service import ExpenseService
+from src.expense_tracker.api.core.database import get_db
 
 router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
 # Dependency Provider: FastAPI uses this to inject the service
-def get_expense_service() -> ExpenseService:
-	return ExpenseService()
+def get_expense_service(db: Session = Depends(get_db)) -> ExpenseService:
+	return ExpenseService(db)
 
 @router.get("/", response_model=List[Expense])
 async def get_expenses(service: ExpenseService = Depends(get_expense_service)) -> List[Expense]:
